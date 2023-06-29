@@ -54,8 +54,52 @@ class Record:
     @Author: Kevin
     """
 
-    def StartRecord(self):
-        pass
+    def StartRecord(self, WavName='Command.wav'):
+        CommandFlag = False
+
+        RecStream = self.pyaudio_instance.open(format=pyaudio.paInt16, channels=1, rate=self.FileRate, input=True,
+                                               frames_per_buffer=self.RecChunk)
+        StartTime = time.time()
+
+        self.RecFrames = []
+        self.BlankFrames = []
+
+        while True:
+            AudioData = RecStream.read(self.RecChunk)
+            InputFlag = self.vad_instance.is_speech(AudioData, self.FileRate)
+
+            if InputFlag:
+                self.RecFrames.append(AudioData)
+                self.BlankFrames = []
+            else:
+                self.BlankFrames.append(AudioData)
+
+            NowTime = time.time()
+
+            if not CommandFlag:
+                # 无语音输入判断
+                if NowTime - StartTime >= self.MaxNoInputTime:
+                    return False
+                # 指令输入判断
+                if self.RecordTimeLength() >= self.MinCommandInputTime:
+                    StartTime = time.time()
+                    CommandFlag = True
+                    continue
+            else:
+                if NowTime - StartTime >= self.MaxRecInputTime:
+                    break
+                if self.BlankTimeLength() >= self.MaxStopInputTime:
+                    break
+
+        with wave.open(WavName, 'wb') as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(self.pyaudio_instance.get_sample_size(pyaudio.paInt16))
+            wf.setframerate(self.FileRate)
+            wf.writeframes(b''.join(self.RecFrames))
+
+        RecStream.stop_stream()
+        RecStream.close()
+        return True
 
     """
     @FunctionName: RecordTimeLength
@@ -66,7 +110,7 @@ class Record:
     """
 
     def RecordTimeLength(self):
-        pass
+        return (len(self.RecFrames) * self.RecChunk) / self.FileRate
 
     """
     @FunctionName: BlankTimeLength
@@ -77,7 +121,7 @@ class Record:
     """
 
     def BlankTimeLength(self):
-        pass
+        return (len(self.BlankFrames) * self.RecChunk) / self.FileRate
 
 
 if __name__ == '__main__':
