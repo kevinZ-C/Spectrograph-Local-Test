@@ -14,7 +14,7 @@ def main():
     rec = recorder.Record()
     while True:
         print("按下‘q’键以退出程序，按其他任意键开始程序")
-        if msvcrt.getch() == b'q':
+        if input() == 'q':
             print("测试程序结束")
             del rec
             break
