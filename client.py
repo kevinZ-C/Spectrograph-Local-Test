@@ -31,6 +31,7 @@ class Client:
 
     def Connect(self):
         try:
+            print("正在连接服务端")
             self.client.connect((self.SERVERHOST, self.SERVERPORT))
             self.connectStatus = True
             return True
