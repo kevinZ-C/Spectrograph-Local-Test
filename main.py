@@ -1,16 +1,54 @@
-# 这是一个示例 Python 脚本。
+# -*- coding: utf-8 -*-
+"""
+@FileName: main.py
+@Description: main
+@Author: Kevin
+@Time: 2023/6/29 11:34
+"""
+import client
+import recorder
+import msvcrt
 
-# 按 Shift+F10 执行或将其替换为您的代码。
-# 按 双击 Shift 在所有地方搜索类、文件、工具窗口、操作和设置。
+
+def main():
+    rec = recorder.Record()
+    while True:
+        print("按下‘q’键以退出程序，按其他任意键开始程序")
+        if msvcrt.getch() == b'q':
+            print("测试程序结束")
+            del rec
+            break
+        else:
+            print("测试程序开始")
+            print("开始录音")      
+            if rec.StartRecord():
+                print("录音结束")
+                cli = client.Client()
+                if cli.Connect():
+                    if cli.SendWAV():
+                        if cli.SendStatus():
+                            recogRes = cli.RecvResult()
+                            if recogRes is not None:
+                                print("识别匹配结果为：" + recogRes)
+                                del cli
+                                continue
+                            else:
+                                print("出现错误，无返回结果")
+                                del cli
+                                continue
+                        else:
+                            del cli
+                            continue
+                    else:
+                        del cli
+                        continue
+                else:
+                    del cli
+                    continue
+            else:
+                print("无有效的音频输入")
+                continue
 
 
-def print_hi(name):
-    # 在下面的代码行中使用断点来调试脚本。
-    print(f'Hi, {name}')  # 按 Ctrl+F8 切换断点。
-
-
-# 按间距中的绿色按钮以运行脚本。
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
+    main()
