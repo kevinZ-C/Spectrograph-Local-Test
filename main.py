@@ -14,14 +14,15 @@ def main():
     rec = recorder.Record()
     while True:
         print("按下‘q’键以退出程序，按其他任意键开始程序")
-        if input() == 'q':
+        if msvcrt.getch() == b'q':
             print("测试程序结束")
             del rec
             break
         else:
-            print("测试程序开始\n \
-                  开始录音")
+            print("测试程序开始")
+            print("开始录音")      
             if rec.StartRecord():
+                print("录音结束")
                 cli = client.Client()
                 if cli.Connect():
                     if cli.SendWAV():
